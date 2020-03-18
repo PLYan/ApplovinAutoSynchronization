@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.test.pname">
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="${OEM_APPNAME}"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme">
+
+        <!-- AppLovin SDK Key 个人账户
+            SF6PilX5Z_tsO3KQihp4rN4DZqLT7g_6EJEhseqUwXmKrJ94xBzIXL6pPEVdryimtu6_2-GA8Wga0OgXPkWMDe
+        -->
+        <!-- AppLovin SDK Key 公司账户
+            xcGD2fy-GdmiZQapx_kUSy5SMKyLoXBk8RyB5u9MVv34KetGdbl4XrXvAUFy0Qg9scKyVTI0NM4i_yzdXih4XE
+        -->
+        <meta-data
+            android:name="applovin.sdk.key"
+            android:value="${OEM_APPLOVINKEY}" />
+        <!-- target url -->
+        <meta-data
+            android:name="target.url"
+            android:value="${OEM_TARGETURL}" />
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+
+</manifest>
