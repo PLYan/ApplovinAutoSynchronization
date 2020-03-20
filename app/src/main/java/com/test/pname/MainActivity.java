@@ -1,26 +1,28 @@
 package com.test.pname;
 
-import android.content.Intent;
+import android.app.Activity;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.applovin.sdk.AppLovinSdk;
 import com.applovin.sdk.AppLovinSdkConfiguration;
 
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
+import okhttp3.Call;
+import okhttp3.Callback;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
 
     private TextView tv;
@@ -34,11 +36,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        public void handleMessage(@NonNull Message msg) {
-            if(weakReference == null)
+        public void handleMessage(Message msg) {
+            if (weakReference == null)
                 return;
             MainActivity ac = weakReference.get();
-            if(ac == null)
+            if (ac == null)
                 return;
             switch (msg.what) {
                 case 1:
@@ -55,7 +57,6 @@ public class MainActivity extends AppCompatActivity {
 
         tv = findViewById(R.id.mytv);
 
-
         Log.d(TAG, ": called AppLovinSdk.initializeSdk");
         AppLovinSdk.initializeSdk(MainActivity.this, new applovinInitializationListener());
     }
@@ -64,11 +65,6 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         public void onSdkInitialized(AppLovinSdkConfiguration appLovinSdkConfiguration) {
-//            Toast.makeText(MainActivity.this,
-//                    "applovinInit result == " + appLovinSdkConfiguration + " myApplicationID = "
-//                            + MainActivity.this.getPackageName(),
-//                    Toast.LENGTH_LONG).show();
-
             String applicationID = MainActivity.this.getApplication().getPackageName();
             String appName = getApplicationName();
             tv.setText(
@@ -92,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
      */
     private void dealWithResultBack(int code) {
         String targetUrl = getTargetUrl();
-//        Toast.makeText(MainActivity.this, "targetUrl == " + targetUrl, Toast.LENGTH_SHORT).show();
         if (!TextUtils.isEmpty(targetUrl)) {
             targetUrl = targetUrl + "?success=" + code;
             Log.d(TAG, "dealWithResultBack: targetUrl == " + targetUrl);
@@ -104,23 +99,46 @@ public class MainActivity extends AppCompatActivity {
 
     private void openUrl(String targetUrl) {
         Log.d(TAG, "openUrl() called with: targetUrl = [" + targetUrl + "]");
-        try {
-            Uri uri = Uri.parse(targetUrl);
-            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-            MainActivity.this.startActivity(intent);
-        } catch (Exception e) {
-            e.printStackTrace();
-            Log.d(TAG, "openUrl: error == " + e.getMessage());
-        }
+//        try {
+//            Uri uri = Uri.parse(targetUrl);
+//            Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+//            MainActivity.this.startActivity(intent);
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            Log.d(TAG, "openUrl: error == " + e.getMessage());
+//        }
+//
+//        myHandler.sendEmptyMessageDelayed(1, 1000);
 
-        myHandler.sendEmptyMessageDelayed(1, 1000);
+        String url = targetUrl;
+        OkHttpClient okHttpClient = new OkHttpClient();
+//        OkHttpClient okHttpClient = new OkHttpClient.Builder()
+//                .connectTimeout(20, TimeUnit.SECONDS)//设置连接超时时间
+//                .readTimeout(20, TimeUnit.SECONDS)//设置读取超时时间
+//                .build();
+        final Request request = new Request.Builder()
+                .url(url)
+                .get()//默认就是GET请求，可以不写
+                .build();
+        Call call = okHttpClient.newCall(request);
+        call.enqueue(new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+                Log.d(TAG, "onFailure: error == " + e.getMessage());
+                myHandler.sendEmptyMessageDelayed(1, 1000);
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                Log.d(TAG, "onResponse: " + response.body().string());
+                myHandler.sendEmptyMessageDelayed(1, 1000);
+            }
+        });
     }
 
     private void closeCurApp() {
-//        MainActivity.this.finish();
         Log.d(TAG, "closeCurApp: call killProcess cur pid;");
         android.os.Process.killProcess(android.os.Process.myPid());
-//        Toast.makeText(MainActivity.this, "called MainActivity.this.finish()", Toast.LENGTH_LONG).show();
     }
 
     public String getApplicationName() {
@@ -168,7 +186,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(myHandler != null) {
+        if (myHandler != null) {
             myHandler.removeCallbacksAndMessages(null);
             myHandler = null;
         }

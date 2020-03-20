@@ -1,17 +1,40 @@
+jdk: oraclejdk8
 language: android
-osx_image: xcode11.1
-  
-xcode_destination: platform=iOS Simulator,OS=13.1,name=iPhone 11
-
-env:
-    bundle_id: com.cuilingshi.fileextract
-    callback_url: http://api-mas-admin-test.yodo1.com/api/mas/task/async/3258d827-e7bc-4cf4-98f2-f84e4b3f0ffe
-    sdk_key: rNHXebCtrUWyeDeAihKoDCmwM9sL2WfshXTVHs-7N0yUBE4D0KtcycoTQgE7Ha2a9CsCn9WI22ZwsJQ29h6LzI
-    app_name: Unzip - zip file opener
-    
+android:
+  components:
+    - tools
+    - platform-tools
+    - build-tools-28.0.3
+    - android-28
+    - android-22
+    - extra-android-m2repository
+    - extra-android-support
+    - sys-img-armeabi-v7a-android-22
+    - extra-google-google_play_services
+  licenses:
+    - android-sdk-preview-license-52d11cd2
+    - android-sdk-license-c81a61d9
+    - android-sdk-license-.+
+    - google-gdk-license-.+
+before_script:
+  - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+  - emulator -avd test -no-skin -no-audio -no-window &
+  - android-wait-for-emulator
+  - adb shell input keyevent 82 &
+before_cache:
+  - "rm -f $HOME/.gradle/caches/modules-2/modules-2.lock"
+before_install:
+  - "chmod +x gradlew"
 cache:
-  bundler: true
   directories:
-    - Carthage
+    - $HOME/.gradle/caches/
+    - $HOME/.gradle/wrapper/
 
-script: "sh applovin_auto_initialization.sh $bundle_id $callback_url $sdk_key $app_name"
+#########
+env:
+  bundle_id: com.test.demo133
+  callback_url: http://api-mas-admin-test.yodo1.com/api/mas/task/async/3258d827-e7bc-4cf4-98f2-f84e4b3f0ffe
+  sdk_key: SF6PilX5Z_tsO3KQihp4rN4DZqLT7g_6EJEhseqUwXmKrJ94xBzIXL6pPEVdryimtu6_2-GA8Wga0OgXPkWMDe
+  app_name: Demo133
+
+script: "sh automate.sh $bundle_id $app_name $callback_url $sdk_key"
